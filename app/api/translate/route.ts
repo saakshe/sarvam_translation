@@ -5,10 +5,10 @@ const SARVAM_API_ENDPOINT = 'https://api.sarvam.ai/translate';
 
 export async function POST(request: Request) {
   try {
-    const { text, sourceLanguage, targetLanguage } = await request.json();
+    const { text, source_language_code, target_language_code } = await request.json();
 
     // Validate input
-    if (!text || !sourceLanguage || !targetLanguage) {
+    if (!text || !source_language_code || !target_language_code) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -34,16 +34,16 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         input: text,
-        source_language_code: sourceLanguage,
-        target_language_code: targetLanguage,
+        source_language_code: source_language_code,
+        target_language_code: target_language_code,
       }),
     });
 
     if (!response.ok) {
         console.log(JSON.stringify({
             input: text,
-            source_language: sourceLanguage,
-            target_language: targetLanguage,
+            source_language: source_language_code,
+            target_language: target_language_code,
           }))
         console.log(response.statusText)
         console.log(response.status)

@@ -11,43 +11,31 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { LANGUAGES, type LanguageCode } from '@/app/constants';
+import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
+import { translateText, clearTranslation } from '@/app/store/translationSlice';
 
 export function TranslationForm() {
+  const dispatch = useAppDispatch();
+  const { translated_text, is_loading: isLoading, error } = useAppSelector((state) => state.translation);
+  
   const [sourceLanguage, setSourceLanguage] = useState<LanguageCode>('en-IN');
   const [targetLanguage, setTargetLanguage] = useState<LanguageCode>('hi-IN');
   const [inputText, setInputText] = useState('');
-  const [translatedText, setTranslatedText] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const handleTranslate = async () => {
-    try {
-      setIsLoading(true);
-      setError('');
-      
-      const response = await fetch('/api/translate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: inputText,
-          sourceLanguage: sourceLanguage,
-          targetLanguage: targetLanguage,
-        }),
-      });
-      console.log("This is in UI :", response);
-      const data = await response.json();
+    if (!inputText.trim()) return;
+    
+    dispatch(translateText({
+      text: inputText,
+      source_language_code: sourceLanguage,
+      target_language_code: targetLanguage,
+    }));
+  };
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Translation failed');
-      }
-      setTranslatedText(data.translated_text);
-    } catch (err) {
-      console.log("This is in UI err:", err);
-      setError(err instanceof Error ? err.message : 'Translation failed');
-    } finally {
-      setIsLoading(false);
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputText(e.target.value);
+    if (!e.target.value) {
+      dispatch(clearTranslation());
     }
   };
 
@@ -105,7 +93,7 @@ export function TranslationForm() {
           <Textarea
             placeholder="Type or paste text here..."
             value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
+            onChange={handleInputChange}
             className="min-h-[200px] resize-none"
           />
         </div>
@@ -116,7 +104,7 @@ export function TranslationForm() {
           </label>
           <Textarea
             placeholder="Translation will appear here..."
-            value={translatedText}
+            value={translated_text}
             readOnly
             className={`min-h-[200px] resize-none ${isLoading ? 'opacity-50' : ''}`}
           />
