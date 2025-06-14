@@ -10,17 +10,25 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { LANGUAGES, type LanguageCode } from '@/app/constants';
+import { LANGUAGES, SPEAKERS, type LanguageCode, type SpeakerName } from '@/app/constants';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
-import { translateText, clearTranslation } from '@/app/store/translationSlice';
+import { translateText, clearTranslation, speakText } from '@/app/store/translationSlice';
+import { Speaker, Loader2 } from 'lucide-react';
 
 export function TranslationForm() {
   const dispatch = useAppDispatch();
-  const { translated_text, is_loading: isLoading, error } = useAppSelector((state) => state.translation);
+  const { 
+    translated_text, 
+    is_loading: isLoading, 
+    error,
+    is_speaking: isSpeaking,
+    audio_error: audioError
+  } = useAppSelector((state) => state.translation);
   
   const [sourceLanguage, setSourceLanguage] = useState<LanguageCode>('en-IN');
   const [targetLanguage, setTargetLanguage] = useState<LanguageCode>('hi-IN');
   const [inputText, setInputText] = useState('');
+  const [selectedSpeaker, setSelectedSpeaker] = useState<SpeakerName>('anushka');
 
   const handleTranslate = async () => {
     if (!inputText.trim()) return;
@@ -39,8 +47,36 @@ export function TranslationForm() {
     }
   };
 
+  const playTranslatedText = async () => {
+    if (!translated_text || isSpeaking) return;
+
+    const result = await dispatch(speakText({
+      input: translated_text,
+      speaker: selectedSpeaker,
+      language: targetLanguage,
+      model: 'bulbul:v2',
+    }));
+
+    if (speakText.fulfilled.match(result)) {
+      // Convert base64 to Blob
+      const base64Data = result.payload.audioBase64;
+      const binaryData = atob(base64Data);
+      const arrayBuffer = new ArrayBuffer(binaryData.length);
+      const uint8Array = new Uint8Array(arrayBuffer);
+      for (let i = 0; i < binaryData.length; i++) {
+        uint8Array[i] = binaryData.charCodeAt(i);
+      }
+      const audioBlob = new Blob([arrayBuffer], { type: 'audio/wav' });
+      
+      // Play the audio
+      const audio = new Audio(URL.createObjectURL(audioBlob));
+      audio.onended = () => URL.revokeObjectURL(audio.src);
+      await audio.play();
+    }
+  };
+
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6">
+    <div className="space-y-6">
       <div className="flex gap-4">
         <div className="flex-1">
           <label className="block text-sm font-medium mb-2">
@@ -48,15 +84,15 @@ export function TranslationForm() {
           </label>
           <Select
             value={sourceLanguage}
-            onValueChange={(value) => setSourceLanguage(value as LanguageCode)}
+            onValueChange={(value: LanguageCode) => setSourceLanguage(value)}
           >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {LANGUAGES.map((lang) => (
-                <SelectItem key={lang.value} value={lang.value}>
-                  {lang.label}
+              {Object.entries(LANGUAGES).map(([code, name]) => (
+                <SelectItem key={code} value={code}>
+                  {name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -69,15 +105,36 @@ export function TranslationForm() {
           </label>
           <Select
             value={targetLanguage}
-            onValueChange={(value) => setTargetLanguage(value as LanguageCode)}
+            onValueChange={(value: LanguageCode) => setTargetLanguage(value)}
           >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {LANGUAGES.map((lang) => (
-                <SelectItem key={lang.value} value={lang.value}>
-                  {lang.label}
+              {Object.entries(LANGUAGES).map(([code, name]) => (
+                <SelectItem key={code} value={code}>
+                  {name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex-1">
+          <label className="block text-sm font-medium mb-2">
+            Speaker
+          </label>
+          <Select
+            value={selectedSpeaker}
+            onValueChange={(value: SpeakerName) => setSelectedSpeaker(value)}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(SPEAKERS).map(([code, name]) => (
+                <SelectItem key={code} value={code}>
+                  {name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -99,9 +156,26 @@ export function TranslationForm() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">
-            Translation
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm font-medium">
+              Translation
+            </label>
+            {translated_text && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={playTranslatedText}
+                disabled={isSpeaking || !translated_text}
+                className="h-8 w-8"
+              >
+                {isSpeaking ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Speaker className="h-4 w-4" />
+                )}
+              </Button>
+            )}
+          </div>
           <Textarea
             placeholder="Translation will appear here..."
             value={translated_text}
@@ -119,9 +193,9 @@ export function TranslationForm() {
         {isLoading ? 'Translating...' : 'Translate'}
       </Button>
 
-      {error && (
+      {(error || audioError) && (
         <div className="p-4 bg-red-50 text-red-600 rounded-md">
-          {error}
+          {error || audioError}
         </div>
       )}
     </div>

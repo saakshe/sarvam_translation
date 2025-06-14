@@ -1,31 +1,41 @@
 // Common Indian languages
-export const LANGUAGES = [
-  // Widely used languages
-  { value: 'en-IN', label: 'English' },
-  { value: 'hi-IN', label: 'Hindi' },
-  { value: 'bn-IN', label: 'Bengali' },
-  { value: 'te-IN', label: 'Telugu' },
-  { value: 'ta-IN', label: 'Tamil' },
-  { value: 'mr-IN', label: 'Marathi' },
-  { value: 'gu-IN', label: 'Gujarati' },
-  { value: 'kn-IN', label: 'Kannada' },
-  { value: 'ml-IN', label: 'Malayalam' },
-  { value: 'pa-IN', label: 'Punjabi' },
-  { value: 'od-IN', label: 'Odia' },
-  
-  // Additional languages
-  { value: 'as-IN', label: 'Assamese' },
-  { value: 'brx-IN', label: 'Bodo' },
-  { value: 'doi-IN', label: 'Dogri' },
-  { value: 'kok-IN', label: 'Konkani' },
-  { value: 'ks-IN', label: 'Kashmiri' },
-  { value: 'mai-IN', label: 'Maithili' },
-  { value: 'mni-IN', label: 'Manipuri (Meiteilon)' },
-  { value: 'ne-IN', label: 'Nepali' },
-  { value: 'sa-IN', label: 'Sanskrit' },
-  { value: 'sat-IN', label: 'Santali' },
-  { value: 'sd-IN', label: 'Sindhi' },
-  { value: 'ur-IN', label: 'Urdu' }
-] as const;
+export const LANGUAGES: Record<string, string> = {
+  'en-IN': 'English',
+  'hi-IN': 'Hindi',
+  'bn-IN': 'Bengali',
+  'te-IN': 'Telugu',
+  'ta-IN': 'Tamil',
+  'mr-IN': 'Marathi',
+  'gu-IN': 'Gujarati',
+  'kn-IN': 'Kannada',
+  'ml-IN': 'Malayalam',
+  'pa-IN': 'Punjabi',
+  'od-IN': 'Odia',
+  'as-IN': 'Assamese',
+  'brx-IN': 'Bodo',
+  'doi-IN': 'Dogri',
+  'kok-IN': 'Konkani',
+  'ks-IN': 'Kashmiri',
+  'mai-IN': 'Maithili',
+  'mni-IN': 'Manipuri (Meiteilon)',
+  'ne-IN': 'Nepali',
+  'sa-IN': 'Sanskrit',
+  'sat-IN': 'Santali',
+  'sd-IN': 'Sindhi',
+  'ur-IN': 'Urdu'
+} as const;
 
-export type LanguageCode = typeof LANGUAGES[number]['value']; 
+export type LanguageCode = keyof typeof LANGUAGES;
+
+// Speakers for bulbul:v2 model
+export const SPEAKERS = {
+  'anushka': 'Anushka',
+  'manisha': 'Manisha',
+  'vidya': 'Vidya',
+  'arya': 'Arya',
+  'abhilash': 'Abhilash',
+  'karun': 'Karun',
+  'hitesh': 'Hitesh'
+} as const;
+
+export type SpeakerName = keyof typeof SPEAKERS; 
