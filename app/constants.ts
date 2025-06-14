@@ -38,4 +38,9 @@ export const SPEAKERS = {
   'hitesh': 'Hitesh'
 } as const;
 
-export type SpeakerName = keyof typeof SPEAKERS; 
+export type SpeakerName = keyof typeof SPEAKERS;
+
+// Translation modes
+export enum TranslationMode {
+  SARVAM_V1 = 'sarvam-translate:v1'
+} 

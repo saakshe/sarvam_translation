@@ -1,9 +1,10 @@
-import { LanguageCode, SpeakerName } from '../constants';
+import { LanguageCode, SpeakerName, TranslationMode } from '../constants';
 
 export interface TranslationRequest {
-  text: string;
+  input: string;
   source_language_code: LanguageCode;
   target_language_code: LanguageCode;
+  mode?: TranslationMode;
 }
 
 export interface TranslationResponse {

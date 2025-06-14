@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { LANGUAGES, SPEAKERS, type LanguageCode, type SpeakerName } from '@/app/constants';
+import { LANGUAGES, SPEAKERS, TranslationMode, type LanguageCode, type SpeakerName } from '@/app/constants';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { translateText, clearTranslation, speakText } from '@/app/store/translationSlice';
 import { Speaker, Loader2 } from 'lucide-react';
@@ -31,13 +31,18 @@ export function TranslationForm() {
   const [selectedSpeaker, setSelectedSpeaker] = useState<SpeakerName>('anushka');
 
   const handleTranslate = async () => {
-    if (!inputText.trim()) return;
+    const trimmedText = inputText.trim();
+    if (!trimmedText) return;
     
-    dispatch(translateText({
-      text: inputText,
+    const translationRequest = {
+      input: trimmedText,
       source_language_code: sourceLanguage,
       target_language_code: targetLanguage,
-    }));
+      mode: TranslationMode.SARVAM_V1,
+    };
+
+    console.log('Dispatching translation request:', translationRequest);
+    dispatch(translateText(translationRequest));
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

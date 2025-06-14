@@ -1,29 +1,47 @@
 import { NextResponse } from 'next/server';
+import { TranslationMode } from '@/app/constants';
 
 // Replace with your actual Sarvam AI API endpoint
 const SARVAM_API_ENDPOINT = 'https://api.sarvam.ai/translate';
 
 export async function POST(request: Request) {
   try {
-    const { text, source_language_code, target_language_code } = await request.json();
+    const requestData = await request.json();
+    console.log('Received request data:', requestData);
 
-    // Validate input
-    if (!text || !source_language_code || !target_language_code) {
+    const { input, source_language_code, target_language_code } = requestData;
+
+    // Validate input with detailed logging
+    if (!input || !source_language_code || !target_language_code) {
+      console.error('Validation failed:', {
+        hasInput: !!input,
+        hasSourceLang: !!source_language_code,
+        hasTargetLang: !!target_language_code,
+        receivedData: requestData
+      });
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields', details: { input, source_language_code, target_language_code } },
         { status: 400 }
       );
     }
 
     // Get API key from environment variable
     const apiKey = process.env.SARVAM_API_KEY;
-    console.log(apiKey)
     if (!apiKey) {
       return NextResponse.json(
         { error: 'API key not configured' },
         { status: 500 }
       );
     }
+
+    const requestPayload = {
+      input,
+      source_language_code,
+      target_language_code,
+      model: TranslationMode.SARVAM_V1
+    };
+
+    console.log('Translation request payload:', requestPayload);
 
     // Make request to Sarvam AI API
     const response = await fetch(SARVAM_API_ENDPOINT, {
@@ -32,32 +50,34 @@ export async function POST(request: Request) {
         'Content-Type': 'application/json',
         'API-Subscription-Key': apiKey,
       },
-      body: JSON.stringify({
-        input: text,
-        source_language_code: source_language_code,
-        target_language_code: target_language_code,
-      }),
+      body: JSON.stringify(requestPayload),
     });
 
     if (!response.ok) {
-        console.log(JSON.stringify({
-            input: text,
-            source_language: source_language_code,
-            target_language: target_language_code,
-          }))
-        console.log(response.statusText)
-        console.log(response.status)
-      throw new Error('Translation API request failed');
+      const errorText = await response.text();
+      console.error('Translation API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText,
+        request: requestPayload
+      });
+      throw new Error(`Translation API failed: ${errorText}`);
     }
 
     const data = await response.json();
-    console.log("This is in API :",data)
-    return NextResponse.json(data);
+    console.log("Translation API response:", data);
+    
+    if (!data.translated_text) {
+      console.error('Invalid response format:', data);
+      throw new Error('Invalid response format from translation API');
+    }
+
+    return NextResponse.json({ translated_text: data.translated_text });
 
   } catch (error) {
     console.error('Translation error:', error);
     return NextResponse.json(
-      { error: 'Translation failed' },
+      { error: error instanceof Error ? error.message : 'Translation failed' },
       { status: 500 }
     );
   }
