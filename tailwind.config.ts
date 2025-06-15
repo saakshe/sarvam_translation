@@ -6,6 +6,7 @@ const config: Config = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  darkMode: ['class'],
   theme: {
     extend: {
       keyframes: {
@@ -21,6 +22,9 @@ const config: Config = {
       animation: {
         'fade-in': 'fade-in 0.3s ease-in-out',
         'slide-in-from-bottom': 'slide-in-from-bottom 0.3s ease-out',
+      },
+      fontFamily: {
+        montserrat: ['var(--font-montserrat)', 'sans-serif'],
       },
     },
   },

@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { LANGUAGES, SPEAKERS, TranslationMode, DISABLED_TTS_LANGUAGES, type LanguageCode, type SpeakerName } from '@/app/constants';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { translateText, clearTranslation, speakText } from '@/app/store/translationSlice';
-import { Speaker, Loader2, X } from 'lucide-react';
+import { Volume2, Loader2, X } from 'lucide-react';
 
 export function TranslationForm() {
   const dispatch = useAppDispatch();
@@ -101,22 +101,22 @@ export function TranslationForm() {
   const isTTSDisabled = DISABLED_TTS_LANGUAGES.has(targetLanguage);
 
   return (
-    <div className="space-y-6">
-      <div className="flex gap-4">
-        <div className="flex-1">
-          <label className="block text-sm font-medium mb-2">
+    <div className="space-y-6 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="w-full sm:flex-1">
+          <label className="block text-sm font-medium mb-2 font-montserrat">
             Source Language
           </label>
           <Select
             value={sourceLanguage}
             onValueChange={(value: LanguageCode) => setSourceLanguage(value)}
           >
-            <SelectTrigger>
+            <SelectTrigger className="font-montserrat">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {Object.entries(LANGUAGES).map(([code, name]) => (
-                <SelectItem key={code} value={code}>
+                <SelectItem key={code} value={code} className="font-montserrat">
                   {name}
                 </SelectItem>
               ))}
@@ -124,20 +124,20 @@ export function TranslationForm() {
           </Select>
         </div>
 
-        <div className="flex-1">
-          <label className="block text-sm font-medium mb-2">
+        <div className="w-full sm:flex-1">
+          <label className="block text-sm font-medium mb-2 font-montserrat">
             Target Language
           </label>
           <Select
             value={targetLanguage}
             onValueChange={(value: LanguageCode) => setTargetLanguage(value)}
           >
-            <SelectTrigger>
+            <SelectTrigger className="font-montserrat">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {Object.entries(LANGUAGES).map(([code, name]) => (
-                <SelectItem key={code} value={code}>
+                <SelectItem key={code} value={code} className="font-montserrat">
                   {name}
                 </SelectItem>
               ))}
@@ -145,8 +145,8 @@ export function TranslationForm() {
           </Select>
         </div>
 
-        <div className="flex-1">
-          <label className="block text-sm font-medium mb-2">
+        <div className="w-full sm:flex-1">
+          <label className="block text-sm font-medium mb-2 font-montserrat">
             Speaker
           </label>
           <Select
@@ -154,12 +154,12 @@ export function TranslationForm() {
             onValueChange={(value: SpeakerName) => setSelectedSpeaker(value)}
             disabled={isTTSDisabled}
           >
-            <SelectTrigger>
+            <SelectTrigger className="font-montserrat">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {Object.entries(SPEAKERS).map(([code, name]) => (
-                <SelectItem key={code} value={code}>
+                <SelectItem key={code} value={code} className="font-montserrat">
                   {name}
                 </SelectItem>
               ))}
@@ -168,22 +168,22 @@ export function TranslationForm() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium mb-2">
+          <label className="block text-sm font-medium mb-2 font-montserrat">
             Enter Text
           </label>
           <Textarea
             placeholder="Type or paste text here..."
             value={inputText}
             onChange={handleInputChange}
-            className="min-h-[200px] resize-none"
+            className="min-h-[200px] resize-none font-montserrat bg-background"
           />
         </div>
 
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm font-medium">
+            <label className="block text-sm font-medium font-montserrat">
               Translation
             </label>
             {translated_text && !isTTSDisabled && (
@@ -192,13 +192,13 @@ export function TranslationForm() {
                 size="icon"
                 onClick={playTranslatedText}
                 disabled={isSpeaking || !translated_text}
-                className="h-8 w-8"
+                className="h-8 w-8 bg-background/80"
                 title={isTTSDisabled ? "Text-to-speech is not available for this language" : undefined}
               >
                 {isSpeaking ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Speaker className="h-4 w-4" />
+                  <Volume2 className="h-4 w-4" />
                 )}
               </Button>
             )}
@@ -207,7 +207,7 @@ export function TranslationForm() {
             placeholder="Translation will appear here..."
             value={translated_text}
             readOnly
-            className={`min-h-[200px] resize-none ${isLoading ? 'opacity-50' : ''}`}
+            className={`min-h-[200px] resize-none font-montserrat bg-background ${isLoading ? 'opacity-50' : ''}`}
           />
         </div>
       </div>
@@ -215,19 +215,19 @@ export function TranslationForm() {
       <Button
         onClick={handleTranslate}
         disabled={isLoading || !inputText.trim()}
-        className="w-full"
+        className="w-full font-montserrat"
       >
         {isLoading ? 'Translating...' : 'Translate'}
       </Button>
 
       {visibleError && (
-        <div className="fixed bottom-4 right-4 p-4 bg-red-50 text-red-600 rounded-md shadow-lg max-w-md animate-in fade-in slide-in-from-bottom-4 flex items-center gap-2">
+        <div className="fixed bottom-4 right-4 p-4 bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive-foreground rounded-md shadow-lg max-w-md animate-in fade-in slide-in-from-bottom-4 flex items-center gap-2 font-montserrat">
           <span>{visibleError}</span>
           <Button
             variant="ghost"
             size="icon"
             onClick={handleDismissError}
-            className="h-6 w-6 hover:bg-red-100"
+            className="h-6 w-6 hover:bg-destructive/20 dark:hover:bg-destructive/30"
           >
             <X className="h-4 w-4" />
           </Button>
