@@ -27,6 +27,22 @@ export const LANGUAGES: Record<string, string> = {
 
 export type LanguageCode = keyof typeof LANGUAGES;
 
+// Languages where microphone (text-to-speech) is disabled
+export const DISABLED_TTS_LANGUAGES = new Set([
+  'as-IN',  // Assamese
+  'brx-IN', // Bodo
+  'doi-IN', // Dogri
+  'kok-IN', // Konkani
+  'ks-IN',  // Kashmiri
+  'mai-IN', // Maithili
+  'mni-IN', // Manipuri (Meiteilon)
+  'ne-IN',  // Nepali
+  'sa-IN',  // Sanskrit
+  'sat-IN', // Santali
+  'sd-IN',  // Sindhi
+  'ur-IN',  // Urdu
+]);
+
 // Speakers for bulbul:v2 model
 export const SPEAKERS = {
   'anushka': 'Anushka',

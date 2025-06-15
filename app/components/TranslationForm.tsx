@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -10,10 +10,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { LANGUAGES, SPEAKERS, TranslationMode, type LanguageCode, type SpeakerName } from '@/app/constants';
+import { LANGUAGES, SPEAKERS, TranslationMode, DISABLED_TTS_LANGUAGES, type LanguageCode, type SpeakerName } from '@/app/constants';
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks';
 import { translateText, clearTranslation, speakText } from '@/app/store/translationSlice';
-import { Speaker, Loader2 } from 'lucide-react';
+import { Speaker, Loader2, X } from 'lucide-react';
 
 export function TranslationForm() {
   const dispatch = useAppDispatch();
@@ -29,6 +29,23 @@ export function TranslationForm() {
   const [targetLanguage, setTargetLanguage] = useState<LanguageCode>('hi-IN');
   const [inputText, setInputText] = useState('');
   const [selectedSpeaker, setSelectedSpeaker] = useState<SpeakerName>('anushka');
+  const [visibleError, setVisibleError] = useState<string | null>(null);
+
+  // Handle error visibility
+  useEffect(() => {
+    const currentError = error || audioError;
+    if (currentError) {
+      setVisibleError(currentError);
+      const timer = setTimeout(() => {
+        setVisibleError(null);
+      }, 15000); // 15 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [error, audioError]);
+
+  const handleDismissError = () => {
+    setVisibleError(null);
+  };
 
   const handleTranslate = async () => {
     const trimmedText = inputText.trim();
@@ -79,6 +96,9 @@ export function TranslationForm() {
       await audio.play();
     }
   };
+
+  // Check if text-to-speech is disabled for the current target language
+  const isTTSDisabled = DISABLED_TTS_LANGUAGES.has(targetLanguage);
 
   return (
     <div className="space-y-6">
@@ -132,6 +152,7 @@ export function TranslationForm() {
           <Select
             value={selectedSpeaker}
             onValueChange={(value: SpeakerName) => setSelectedSpeaker(value)}
+            disabled={isTTSDisabled}
           >
             <SelectTrigger>
               <SelectValue />
@@ -165,13 +186,14 @@ export function TranslationForm() {
             <label className="block text-sm font-medium">
               Translation
             </label>
-            {translated_text && (
+            {translated_text && !isTTSDisabled && (
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={playTranslatedText}
                 disabled={isSpeaking || !translated_text}
                 className="h-8 w-8"
+                title={isTTSDisabled ? "Text-to-speech is not available for this language" : undefined}
               >
                 {isSpeaking ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -198,9 +220,17 @@ export function TranslationForm() {
         {isLoading ? 'Translating...' : 'Translate'}
       </Button>
 
-      {(error || audioError) && (
-        <div className="p-4 bg-red-50 text-red-600 rounded-md">
-          {error || audioError}
+      {visibleError && (
+        <div className="fixed bottom-4 right-4 p-4 bg-red-50 text-red-600 rounded-md shadow-lg max-w-md animate-in fade-in slide-in-from-bottom-4 flex items-center gap-2">
+          <span>{visibleError}</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleDismissError}
+            className="h-6 w-6 hover:bg-red-100"
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </div>
       )}
     </div>
